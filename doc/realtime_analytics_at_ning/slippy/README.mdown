@@ -1,0 +1,69 @@
+Slippy - HTML Slides
+====================
+
+Demo / Documentation
+--------------------
+
+See the example slide deck live on [slides.seld.be][1]
+
+[1]: http://slides.seld.be/?file=2010-05-30+Example.html
+
+Contribute
+----------
+
+If you like this piece of software, please consider contributing back with Flattr or Pledgie:
+
+<a href="http://flattr.com/thing/14125/Slippy-HTML-Presentations" target="_blank"><img src="http://api.flattr.com/button/button-static-50x60.png" title="Flattr this" border="0" /></a> <a href="http://pledgie.com/campaigns/11290"><img alt="Click here to lend your support to slippy and make a donation via pledgie.com !" src="http://www.pledgie.com/campaigns/11290.png?skin_name=chrome" border="0" /></a>
+
+Code contributions or ideas are obviously also much welcome.
+
+Usage
+-----
+
+Navigate, double click anywhere, press space or use the left/up and right/down arrow keys
+
+Go to a slide directly, press number keys and then enter
+
+Get an overview, press escape, tab or delete then click on a slide to go straight to it
+
+Author
+------
+
+Jordi Boggiano - <j.boggiano@seld.be>
+<http://seld.be/> - <http://twitter.com/seldaek>
+
+Changelog
+---------
+
+- 1.0.0
+  - Switched license to BSD
+  - Slide decks files are now standalone html files that don't need php
+    - However it is recommended if you have code blocks since it will convert html special chars automatically
+    - Note that this breaks compatibility with previous slide decks, since the js/css files have to be included by hand in it now
+  - Added layout functionality, see the slide on layouts in the example deck for docs
+  - Added parameters to the main slippy js command that enable users to easily tweak/override things, see example file
+  - Added swipe/double-tap support on touch devices
+  - Splitted css in structural/theme stylesheets for easy customization
+  - Improved the default theme for better readability on projectors
+  - Auto-sizing to the browser dimensions
+  - Added page up, page down support for prev/next slide, and home/end to go to the begining or end of presentaiton
+  - Animations are going the right way now when using overview/direct input and going backwards
+  - Added a template to render the slide repository page
+  - Added a packager that embeds everything for easy distribution of slides as one html file
+  - JS Alerts are now cleared when changing slide, but stay visible longer
+  - Fixed bug preventing "0" to be used to switch to slides
+
+- 0.9.0
+  - Initial Public Release
+
+License
+-------
+
+Slippy is licensed under the New BSD License, which means you can do pretty much anything you want with it - However, I encourage you to share your slides and stylesheets if you make some, but there is no obligation whatsoever.
+
+New BSD License - see the src/LICENSE file for details
+
+Compatibility
+-------------
+
+It should work with all browsers, except for the overview function that does not work in IE8 and below.

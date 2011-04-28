@@ -1,0 +1,30 @@
+<h1 id='esper_uda'>Esper UDA</h1>
+<div class='highlight'><pre><code class='java'><span class='kd'>public</span> <span class='n'>Object</span> <span class='nf'>getValue</span><span class='o'>()</span>
+<span class='o'>{</span>
+    <span class='kt'>int</span> <span class='n'>nbElements</span> <span class='o'>=</span> <span class='n'>vector</span><span class='o'>.</span><span class='na'>size</span><span class='o'>();</span>
+
+    <span class='k'>if</span> <span class='o'>(</span><span class='n'>nbElements</span> <span class='o'>==</span> <span class='mi'>0</span><span class='o'>)</span> <span class='o'>{</span>
+        <span class='k'>return</span> <span class='kc'>null</span><span class='o'>;</span>
+    <span class='o'>}</span>
+
+    <span class='kt'>double</span> <span class='n'>rank</span> <span class='o'>=</span> <span class='n'>percentile</span> <span class='o'>/</span> <span class='mi'>100</span><span class='o'>.</span> <span class='o'>*</span> <span class='o'>(</span><span class='n'>nbElements</span> <span class='o'>-</span> <span class='mi'>1</span><span class='o'>)</span> <span class='o'>+</span> <span class='mi'>1</span><span class='o'>;</span>
+    <span class='kt'>int</span> <span class='n'>k</span> <span class='o'>=</span> <span class='o'>(</span><span class='kt'>int</span><span class='o'>)</span> <span class='n'>rank</span><span class='o'>;</span>
+    <span class='kt'>double</span> <span class='n'>d</span> <span class='o'>=</span> <span class='n'>rank</span> <span class='o'>-</span> <span class='n'>k</span><span class='o'>;</span>
+
+    <span class='k'>if</span> <span class='o'>(</span><span class='n'>k</span> <span class='o'>==</span> <span class='mi'>0</span><span class='o'>)</span> <span class='o'>{</span>
+        <span class='k'>return</span> <span class='n'>vector</span><span class='o'>.</span><span class='na'>getValue</span><span class='o'>(</span><span class='mi'>0</span><span class='o'>);</span>
+    <span class='o'>}</span>
+    <span class='k'>else</span> <span class='nf'>if</span> <span class='o'>(</span><span class='n'>k</span> <span class='o'>==</span> <span class='n'>nbElements</span><span class='o'>)</span> <span class='o'>{</span>
+        <span class='k'>return</span> <span class='n'>vector</span><span class='o'>.</span><span class='na'>getValue</span><span class='o'>(</span><span class='n'>nbElements</span> <span class='o'>-</span> <span class='mi'>1</span><span class='o'>);</span>
+    <span class='o'>}</span>
+    <span class='k'>else</span> <span class='o'>{</span>
+        <span class='k'>return</span> <span class='n'>vector</span><span class='o'>.</span><span class='na'>getValue</span><span class='o'>(</span><span class='n'>k</span> <span class='o'>-</span> <span class='mi'>1</span><span class='o'>)</span> <span class='o'>+</span>
+            <span class='n'>d</span> <span class='o'>*</span> <span class='o'>(</span><span class='n'>vector</span><span class='o'>.</span><span class='na'>getValue</span><span class='o'>(</span><span class='n'>k</span><span class='o'>)</span> <span class='o'>-</span> <span class='n'>vector</span><span class='o'>.</span><span class='na'>getValue</span><span class='o'>(</span><span class='n'>k</span> <span class='o'>-</span> <span class='mi'>1</span><span class='o'>));</span>
+    <span class='o'>}</span>
+<span class='o'>}</span>
+</code></pre>
+</div><div class='highlight'><pre><code class='xml'><span class='nt'>&lt;plugin-aggregation-function</span>
+    <span class='na'>name=</span><span class='s'>&quot;tp&quot;</span>
+    <span class='na'>function-class=</span><span class='s'>&quot;com.ning.metrics.realtime.esper.TPAggregator&quot;</span><span class='nt'>/&gt;</span>
+</code></pre>
+</div>

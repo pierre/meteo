@@ -1,0 +1,5 @@
+# Holt-Winters: example
+
+<div class="center" markdown="1">
+    ![OpenTSDB](images/HW-anomalie-cpu-avg.png)
+</div>

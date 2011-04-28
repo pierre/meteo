@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+	<title>Realtime Analytics at Ning</title>
+	<meta name="author" content="Pierre-Alexandre Meyer" />
+	<meta name="email" content="pierre@ning.com" />
+	<meta name="author" content="Ning Tech Talk" />
+	<meta name="date" content="2011-04-27" />
+
+	<!-- Slippy structural styles -->
+	<link type="text/css" rel="stylesheet" href="slippy/src/slippy-0.9.0.css"/>
+	<!-- Syntax highlighting -->
+	<link type="text/css" rel="stylesheet" href="stylesheets/highlighter.css"/>
+	<!-- Slippy theme -->
+	<link type="text/css" rel="stylesheet" href="stylesheets/slippy-pure-big-font.css"/>
+
+	<!-- Slippy core file and dependencies -->
+	<script type="text/javascript" src="slippy/src/jquery-1.4.2.min.js"></script>
+	<script type="text/javascript" src="slippy/src/jquery.history.js"></script>
+	<script type="text/javascript" src="slippy/src/slippy-0.9.0.js"></script>
+
+	<!-- Slippy init code -->
+	<script type="text/javascript">
+	$(function() {
+		$(".slide").slippy({});
+	});
+	</script>
+</head>
+<body>
+	
+
+
+	<div class="slide">
+	<h1 id='realtime_analytics_at'>Realtime Analytics at</h1>
+<div class='center'>
+<p><img src='images/ning-logo.png' alt='Ning Tech Talk' /></p>
+</div>
+<h2 id='pierrealexandre_meyer'>Pierre-Alexandre Meyer</h2>
+
+<h2 id='httpmouraforg'><a href='http://mouraf.org'>http://mouraf.org</a></h2>
+
+<h2 id='pamonrails'><a href='http://twitter.com/pamonrails'>@pamonrails</a></h2>
+
+<h2 id='pierreningcom'>pierre@ning.com</h2>
+<div class='footer'>
+April 27th, 2011
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='data_pipeline'>Data pipeline</h1>
+<div class='center'>
+<p><img src='images/ning-architecture.png' alt='Ning Data pipeline' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='events'>Events</h1>
+<div class='highlight'><pre><code class='java'><span class='n'>struct</span> <span class='n'>JettyLog</span>   <span class='o'>{</span>
+    <span class='mi'>1</span><span class='o'>:</span><span class='n'>i64</span> <span class='n'>event_date</span><span class='o'>,</span>
+    <span class='mi'>2</span><span class='o'>:</span><span class='n'>string</span> <span class='n'>host</span><span class='o'>,</span>
+    <span class='mi'>3</span><span class='o'>:</span><span class='n'>string</span> <span class='n'>path</span><span class='o'>,</span>
+    <span class='mi'>4</span><span class='o'>:</span><span class='n'>string</span> <span class='n'>query</span><span class='o'>,</span>
+    <span class='mi'>5</span><span class='o'>:</span><span class='n'>string</span> <span class='n'>sourceipaddress</span><span class='o'>,</span>
+    <span class='mi'>6</span><span class='o'>:</span><span class='n'>string</span> <span class='n'>trace</span><span class='o'>,</span>
+    <span class='mi'>7</span><span class='o'>:</span><span class='n'>i64</span> <span class='n'>appid</span><span class='o'>,</span>
+    <span class='mi'>8</span><span class='o'>:</span><span class='n'>i64</span> <span class='n'>profileid</span><span class='o'>,</span>
+    <span class='mi'>9</span><span class='o'>:</span><span class='n'>string</span> <span class='n'>profile</span><span class='o'>,</span>
+    <span class='mi'>10</span><span class='o'>:</span><span class='n'>string</span> <span class='n'>contenttype</span><span class='o'>,</span>
+    <span class='mi'>11</span><span class='o'>:</span><span class='n'>i32</span> <span class='n'>status</span><span class='o'>,</span>
+    <span class='mi'>12</span><span class='o'>:</span><span class='n'>i32</span> <span class='n'>responselength</span><span class='o'>,</span>
+    <span class='mi'>13</span><span class='o'>:</span><span class='n'>string</span> <span class='n'>method</span><span class='o'>,</span>
+    <span class='mi'>14</span><span class='o'>:</span><span class='n'>string</span> <span class='n'>scheme</span><span class='o'>,</span>
+    <span class='mi'>15</span><span class='o'>:</span><span class='n'>i32</span> <span class='n'>timetofirstbyte</span><span class='o'>,</span>
+    <span class='mi'>16</span><span class='o'>:</span><span class='n'>string</span> <span class='n'>corehostname</span><span class='o'>,</span>
+    <span class='mi'>17</span><span class='o'>:</span><span class='n'>string</span> <span class='n'>coreipaddress</span><span class='o'>,</span>
+    <span class='mi'>18</span><span class='o'>:</span><span class='n'>i32</span> <span class='n'>coreport</span><span class='o'>,</span>
+    <span class='mi'>19</span><span class='o'>:</span><span class='n'>string</span> <span class='n'>coretype</span><span class='o'>,</span>
+    <span class='mi'>20</span><span class='o'>:</span><span class='n'>i32</span> <span class='n'>responsetime</span>
+<span class='o'>}</span>
+</code></pre>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='stats'>Stats</h1>
+
+<ul>
+<li>~50 different event types</li>
+
+<li>New event type created for each new feature</li>
+
+<li>Peak at 6K events per second</li>
+</ul>
+</div>
+
+	<div class="slide">
+	<h1 id='high_latency'>High latency</h1>
+
+<ul>
+<li>Java library: 1 minute buffer</li>
+
+<li>Collector to HDFS: 30 seconds to 5 minutes</li>
+
+<li>In practice, 90 seconds between client and HDFS</li>
+
+<li>Netezza loader: run every hour</li>
+</ul>
+</div>
+
+	<div class="slide">
+	<h1 id='optimization_the_hard_way'>Optimization: the hard way</h1>
+
+<ol>
+<li>Lower local buffering (client, collector): 60&#8217; between network creation and event in HDFS</li>
+
+<li>Incremental Netezza loader: 3-7 minutes later in Netezza</li>
+</ol>
+</div>
+
+	<div class="slide">
+	<h1 id='optimization_the_harder_way'>Optimization: the harder way</h1>
+
+<ul>
+<li>Comet/Websocket from the client</li>
+
+<li>Collector stream into HDFS (append, sync)</li>
+
+<li>Parallel loads in Netezza (synonyms, materialized views)</li>
+</ul>
+</div>
+
+	<div class="slide">
+	<h1 id='brilliant_idea'>Brilliant idea</h1>
+<div class='center'>
+<p><img src='images/bon_sang.jpg' alt='Bon sang mais cest bien sûr !' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='data_pipeline'>Data pipeline</h1>
+<div class='center'>
+<p><img src='images/ning-architecture-2.png' alt='Ning Data pipeline' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<div class='highlight'><pre><code class='java'><span class='kd'>public</span> <span class='kt'>boolean</span> <span class='nf'>sendMessage</span><span class='o'>(</span><span class='n'>Event</span> <span class='n'>event</span><span class='o'>)</span>
+    <span class='o'>{</span>
+        <span class='kt'>boolean</span> <span class='n'>success</span> <span class='o'>=</span> <span class='kc'>false</span><span class='o'>;</span>
+
+        <span class='n'>MessageProducer</span> <span class='n'>producer</span> <span class='o'>=</span> <span class='kc'>null</span><span class='o'>;</span>
+        <span class='k'>try</span> <span class='o'>{</span>
+            <span class='c1'>// Create the destination</span>
+            <span class='kd'>final</span> <span class='n'>ActiveMQTopic</span> <span class='n'>topic</span> <span class='o'>=</span> <span class='k'>new</span> <span class='n'>ActiveMQTopic</span><span class='o'>(</span><span class='n'>event</span><span class='o'>.</span><span class='na'>getType</span><span class='o'>());</span>
+
+            <span class='c1'>// Create a MessageProducer from the Session to the Topic</span>
+            <span class='n'>producer</span> <span class='o'>=</span> <span class='n'>session</span><span class='o'>.</span><span class='na'>createProducer</span><span class='o'>(</span><span class='n'>topic</span><span class='o'>);</span>
+            <span class='n'>producer</span><span class='o'>.</span><span class='na'>setDeliveryMode</span><span class='o'>(</span><span class='n'>DeliveryMode</span><span class='o'>.</span><span class='na'>NON_PERSISTENT</span><span class='o'>);</span>
+            <span class='n'>producer</span><span class='o'>.</span><span class='na'>setTimeToLive</span><span class='o'>(</span><span class='n'>messagesTTLMilliseconds</span><span class='o'>);</span>
+
+            <span class='n'>TextMessage</span> <span class='n'>message</span> <span class='o'>=</span> <span class='n'>session</span><span class='o'>.</span><span class='na'>createTextMessage</span><span class='o'>(</span><span class='n'>event</span><span class='o'>.</span><span class='na'>toJSON</span><span class='o'>());</span>
+
+            <span class='c1'>// Tell the producer to send the message</span>
+            <span class='n'>producer</span><span class='o'>.</span><span class='na'>send</span><span class='o'>(</span><span class='n'>message</span><span class='o'>);</span>
+        <span class='o'>}</span>
+        <span class='k'>catch</span> <span class='o'>(</span><span class='n'>JMSException</span> <span class='n'>e</span><span class='o'>)</span> <span class='o'>{</span>
+            <span class='c1'>// Connection flacky, maybe got dropped? ActiveMQ enpoint died?</span>
+            <span class='n'>logger</span><span class='o'>.</span><span class='na'>warn</span><span class='o'>(</span><span class='s'>&quot;Unable to send message: &quot;</span> <span class='o'>+</span> <span class='n'>event</span><span class='o'>,</span> <span class='n'>e</span><span class='o'>);</span>
+            <span class='n'>requestReconnection</span><span class='o'>();</span>
+        <span class='o'>}</span>
+
+        <span class='k'>return</span> <span class='n'>success</span>
+    <span class='o'>}</span>
+</code></pre>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='in_qa'>In QA</h1>
+<div class='center'>
+<p><img src='images/qa_is_fine.jpg' alt='Works fine!' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='in_production'>In production</h1>
+<div class='center'>
+<p><img src='images/bring_it_on.jpg' alt='Bring it on!' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='oops'>Oops</h1>
+
+<h2 id='gc_spike'>GC spike</h2>
+<div class='center'>
+<p><img src='images/pass1_coll_jvm_gc.png' alt='Collector GC' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='producers_leak'>Producers leak</h1>
+<div class='highlight'><pre><code class='java'><span class='o'>---</span> <span class='n'>ActiveMQSender</span><span class='o'>.</span><span class='na'>java</span><span class='o'>.</span><span class='na'>old</span>
+<span class='o'>+++</span> <span class='n'>ActiveMQSender</span><span class='o'>.</span><span class='na'>java</span>
+<span class='err'>@@</span> <span class='o'>-</span><span class='mi'>25</span><span class='o'>,</span><span class='mi'>6</span> <span class='o'>+</span><span class='mi'>23</span><span class='o'>,</span><span class='mi'>8</span> <span class='err'>@@</span>
+             <span class='c1'>// Connection flacky, maybe got dropped? ActiveMQ died?</span>
+             <span class='n'>logger</span><span class='o'>.</span><span class='na'>warn</span><span class='o'>(</span><span class='s'>&quot;Unable to send message: &quot;</span> <span class='o'>+</span> <span class='n'>event</span><span class='o'>,</span> <span class='n'>e</span><span class='o'>);</span>
+             <span class='n'>requestReconnection</span><span class='o'>();</span>
+<span class='o'>+</span>        <span class='o'>}</span> <span class='k'>finally</span> <span class='o'>{</span>
+<span class='o'>+</span>            <span class='n'>producer</span><span class='o'>?.</span><span class='na'>close</span><span class='o'>();</span> <span class='c1'>// One day...</span>
+         <span class='o'>}</span>
+
+         <span class='k'>return</span> <span class='n'>success</span>
+</code></pre>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='in_production'>In production</h1>
+<div class='center'>
+<p><img src='images/bring_it_on.jpg' alt='Bring it on!' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='oops_2'>Oops #2</h1>
+
+<h2 id='cpu_spike'>CPU spike</h2>
+<div class='center'>
+<p><img src='images/pass2_cpu_spike.png' alt='CPU spike' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='bad_logging'>Bad logging</h1>
+<div class='highlight'><pre><code class='java'><span class='o'>---</span> <span class='n'>ActiveMQSender</span><span class='o'>.</span><span class='na'>java</span><span class='o'>.</span><span class='na'>old</span>
+<span class='o'>+++</span> <span class='n'>ActiveMQSender</span><span class='o'>.</span><span class='na'>java</span>
+<span class='err'>@@</span> <span class='o'>-</span><span class='mi'>23</span><span class='o'>,</span><span class='mi'>7</span> <span class='o'>+</span><span class='mi'>23</span><span class='o'>,</span><span class='mi'>6</span> <span class='err'>@@</span>
+         <span class='o'>}</span>
+         <span class='k'>catch</span> <span class='o'>(</span><span class='n'>JMSException</span> <span class='n'>e</span><span class='o'>)</span> <span class='o'>{</span>
+             <span class='c1'>// Connection flacky, maybe got dropped? ActiveMQ died?</span>
+<span class='o'>-</span>            <span class='n'>logger</span><span class='o'>.</span><span class='na'>warn</span><span class='o'>(</span><span class='s'>&quot;Unable to send message: &quot;</span> <span class='o'>+</span> <span class='n'>event</span><span class='o'>,</span> <span class='n'>e</span><span class='o'>);</span>
+             <span class='n'>requestReconnection</span><span class='o'>();</span>
+         <span class='o'>}</span>
+</code></pre>
+</div>
+<p>Among fixes:</p>
+
+<ul>
+<li>output every X failures</li>
+
+<li>don&#8217;t flush logs</li>
+</ul>
+</div>
+
+	<div class="slide">
+	<h1 id='lessons_learned'>Lessons learned</h1>
+
+<h2 id='its_ok_to_fail'>It&#8217;s ok to fail</h2>
+
+<p>Just make sure to have</p>
+
+<ul>
+<li>monitoring</li>
+
+<li>alerting</li>
+
+<li>runtime JMX switches</li>
+</ul>
+</div>
+
+	<div class="slide">
+	<h1 id='now_what'>Now what?</h1>
+
+<h2 id='charts'>Charts!</h2>
+<div class='center'>
+<p><img src='images/xkcd_pie_chart.png' alt='Charts!' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='esper'>Esper</h1>
+
+<ul>
+<li>Event processor</li>
+
+<li>Designed for high frequency time-based data</li>
+
+<li>SQL-like DSL</li>
+</ul>
+</div>
+
+	<div class="slide">
+	<h1 id='data_pipeline'>Data pipeline</h1>
+<div class='center'>
+<p><img src='images/ning-architecture-3.png' alt='Ning Data pipeline' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='performance_metrics'>Performance metrics</h1>
+<div class='center'>
+<p><img src='images/graphite_production_test_network.invert.png' alt='Performance metrics' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='esper_query'>Esper query</h1>
+<div class='highlight'><pre><code class='sql'><span class='k'>select</span>
+  <span class='n'>html_time</span>
+<span class='k'>from</span> <span class='n'>BazelCSPerfLite</span>
+<span class='k'>where</span> <span class='n'>application</span><span class='o'>=</span><span class='s1'>&#39;test_network&#39;</span>
+</code></pre>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='health'>Health</h1>
+<div class='center'>
+<p><img src='images/graphite_response_codes.invert.png' alt='Response codes' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='esper_query'>Esper query</h1>
+<div class='highlight'><pre><code class='sql'><span class='k'>select</span>
+  <span class='n'>istream</span> <span class='k'>count</span><span class='p'>(</span><span class='n'>responseCode</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>twoxx</span>
+<span class='k'>from</span> <span class='n'>FrontDoorVisit</span><span class='p'>.</span><span class='n'>win</span><span class='p'>:</span><span class='n'>time</span><span class='p'>(</span><span class='mi'>10</span> <span class='n'>sec</span><span class='p'>)</span>
+<span class='k'>where</span> <span class='n'>responseCode</span> <span class='o'>&gt;=</span> <span class='mi'>200</span> <span class='k'>and</span> <span class='n'>responseCode</span> <span class='o'>&lt;</span> <span class='mi'>300</span>
+
+<span class='k'>select</span>
+  <span class='n'>istream</span> <span class='k'>count</span><span class='p'>(</span><span class='n'>responseCode</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>threexx</span>
+<span class='k'>from</span> <span class='n'>FrontDoorVisit</span><span class='p'>.</span><span class='n'>win</span><span class='p'>:</span><span class='n'>time</span><span class='p'>(</span><span class='mi'>10</span> <span class='n'>sec</span><span class='p'>)</span>
+<span class='k'>where</span> <span class='n'>responseCode</span> <span class='o'>&gt;=</span> <span class='mi'>300</span> <span class='k'>and</span> <span class='n'>responseCode</span> <span class='o'>&lt;</span> <span class='mi'>400</span>
+
+<span class='k'>select</span>
+  <span class='n'>istream</span> <span class='k'>count</span><span class='p'>(</span><span class='n'>responseCode</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>fourxx</span>
+<span class='k'>from</span> <span class='n'>FrontDoorVisit</span><span class='p'>.</span><span class='n'>win</span><span class='p'>:</span><span class='n'>time</span><span class='p'>(</span><span class='mi'>10</span> <span class='n'>sec</span><span class='p'>)</span>
+<span class='k'>where</span> <span class='n'>responseCode</span> <span class='o'>&gt;=</span> <span class='mi'>400</span> <span class='k'>and</span> <span class='n'>responseCode</span> <span class='o'>&lt;</span> <span class='mi'>500</span>
+
+<span class='k'>select</span>
+  <span class='n'>istream</span> <span class='k'>count</span><span class='p'>(</span><span class='n'>responseCode</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>fivexx</span>
+<span class='k'>from</span> <span class='n'>FrontDoorVisit</span><span class='p'>.</span><span class='n'>win</span><span class='p'>:</span><span class='n'>time</span><span class='p'>(</span><span class='mi'>10</span> <span class='n'>sec</span><span class='p'>)</span>
+<span class='k'>where</span> <span class='n'>responseCode</span> <span class='o'>&gt;=</span> <span class='mi'>500</span>
+</code></pre>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='more_interesting_tp'>More interesting: TP</h1>
+
+<h2 id='sla_page_should_render_in__1_second_for_90_users'>SLA: page should render in &lt; 1 second for 90% users</h2>
+</div>
+
+	<div class="slide">
+	<h1 id='performance_metrics'>Performance metrics</h1>
+<div class='center'>
+<p><img src='images/HomepagePerformance.invert.png' alt='HTML render time TPs' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='esper_query'>Esper query</h1>
+<div class='highlight'><pre><code class='sql'><span class='k'>select</span>
+  <span class='n'>istream</span> <span class='n'>tp</span><span class='p'>(</span><span class='mi'>90</span><span class='p'>,</span> <span class='n'>timeToFirstByte</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>tp90</span>
+<span class='p'>,</span> <span class='n'>tp</span><span class='p'>(</span><span class='mi'>99</span><span class='p'>,</span> <span class='n'>timeToFirstByte</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>tp99</span>
+<span class='p'>,</span> <span class='k'>count</span><span class='p'>(</span><span class='o'>*</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>visits</span>
+<span class='k'>from</span> <span class='n'>FrontDoorVisit</span><span class='p'>.</span><span class='n'>win</span><span class='p'>:</span><span class='n'>time</span><span class='p'>(</span><span class='mi'>60</span> <span class='n'>sec</span><span class='p'>)</span>
+<span class='k'>where</span> <span class='n'>responseCode</span> <span class='o'>&lt;</span> <span class='mi'>300</span>
+<span class='k'>and</span> <span class='p'>(</span><span class='n'>path</span> <span class='n'>regexp</span> <span class='s1'>&#39;($|/?+((?|#|&amp;).*$)?+)&#39;</span>
+  <span class='k'>or</span> <span class='n'>path</span> <span class='n'>regexp</span> <span class='s1'>&#39;/main($|/?+((?|#|&amp;).*$)?+)&#39;</span><span class='p'>)</span>
+</code></pre>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='esper_uda'>Esper UDA</h1>
+<div class='highlight'><pre><code class='java'><span class='kd'>public</span> <span class='n'>Object</span> <span class='nf'>getValue</span><span class='o'>()</span>
+<span class='o'>{</span>
+    <span class='kt'>int</span> <span class='n'>nbElements</span> <span class='o'>=</span> <span class='n'>vector</span><span class='o'>.</span><span class='na'>size</span><span class='o'>();</span>
+
+    <span class='k'>if</span> <span class='o'>(</span><span class='n'>nbElements</span> <span class='o'>==</span> <span class='mi'>0</span><span class='o'>)</span> <span class='o'>{</span>
+        <span class='k'>return</span> <span class='kc'>null</span><span class='o'>;</span>
+    <span class='o'>}</span>
+
+    <span class='kt'>double</span> <span class='n'>rank</span> <span class='o'>=</span> <span class='n'>percentile</span> <span class='o'>/</span> <span class='mi'>100</span><span class='o'>.</span> <span class='o'>*</span> <span class='o'>(</span><span class='n'>nbElements</span> <span class='o'>-</span> <span class='mi'>1</span><span class='o'>)</span> <span class='o'>+</span> <span class='mi'>1</span><span class='o'>;</span>
+    <span class='kt'>int</span> <span class='n'>k</span> <span class='o'>=</span> <span class='o'>(</span><span class='kt'>int</span><span class='o'>)</span> <span class='n'>rank</span><span class='o'>;</span>
+    <span class='kt'>double</span> <span class='n'>d</span> <span class='o'>=</span> <span class='n'>rank</span> <span class='o'>-</span> <span class='n'>k</span><span class='o'>;</span>
+
+    <span class='k'>if</span> <span class='o'>(</span><span class='n'>k</span> <span class='o'>==</span> <span class='mi'>0</span><span class='o'>)</span> <span class='o'>{</span>
+        <span class='k'>return</span> <span class='n'>vector</span><span class='o'>.</span><span class='na'>getValue</span><span class='o'>(</span><span class='mi'>0</span><span class='o'>);</span>
+    <span class='o'>}</span>
+    <span class='k'>else</span> <span class='nf'>if</span> <span class='o'>(</span><span class='n'>k</span> <span class='o'>==</span> <span class='n'>nbElements</span><span class='o'>)</span> <span class='o'>{</span>
+        <span class='k'>return</span> <span class='n'>vector</span><span class='o'>.</span><span class='na'>getValue</span><span class='o'>(</span><span class='n'>nbElements</span> <span class='o'>-</span> <span class='mi'>1</span><span class='o'>);</span>
+    <span class='o'>}</span>
+    <span class='k'>else</span> <span class='o'>{</span>
+        <span class='k'>return</span> <span class='n'>vector</span><span class='o'>.</span><span class='na'>getValue</span><span class='o'>(</span><span class='n'>k</span> <span class='o'>-</span> <span class='mi'>1</span><span class='o'>)</span> <span class='o'>+</span>
+            <span class='n'>d</span> <span class='o'>*</span> <span class='o'>(</span><span class='n'>vector</span><span class='o'>.</span><span class='na'>getValue</span><span class='o'>(</span><span class='n'>k</span><span class='o'>)</span> <span class='o'>-</span> <span class='n'>vector</span><span class='o'>.</span><span class='na'>getValue</span><span class='o'>(</span><span class='n'>k</span> <span class='o'>-</span> <span class='mi'>1</span><span class='o'>));</span>
+    <span class='o'>}</span>
+<span class='o'>}</span>
+</code></pre>
+</div><div class='highlight'><pre><code class='xml'><span class='nt'>&lt;plugin-aggregation-function</span>
+    <span class='na'>name=</span><span class='s'>&quot;tp&quot;</span>
+    <span class='na'>function-class=</span><span class='s'>&quot;com.ning.metrics.realtime.esper.TPAggregator&quot;</span><span class='nt'>/&gt;</span>
+</code></pre>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='more_interesting'>More interesting</h1>
+
+<h2 id='could_we_have_predicted_it'>Could we have predicted it?</h2>
+<div class='center'>
+<p><img src='images/pass1_coll_jvm_gc.png' alt='Collector GC' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='thresholds'>Thresholds?</h1>
+
+<h2 id='but_could_we_have_predicted_this'>But could we have predicted this?</h2>
+<div class='center'>
+<p><img src='images/vip-latent-issue.png' alt='Latent issue' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='holtwinters'>Holt-Winters</h1>
+<div class='center'>
+<p><img src='images/ProcessCpuTimeNormalOperationsCollector1Smoothed.png' alt='Holt-Winters example' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='holtwinters_example'>Holt-Winters: example</h1>
+
+<ul>
+<li>JVM System Load average</li>
+
+<li>Jetty 7</li>
+
+<li>Simulate failure: slow handler (bzip2 4M file)</li>
+</ul>
+</div>
+
+	<div class="slide">
+	<h1 id='hw_in_esper'>HW in Esper</h1>
+<div class='highlight'><pre><code class='sql'><span class='k'>select</span>
+  <span class='n'>lastRaw</span> <span class='k'>as</span> <span class='n'>raw</span>
+<span class='p'>,</span> <span class='n'>forecast</span>
+<span class='p'>,</span> <span class='n'>deviation</span>
+<span class='k'>from</span> <span class='n'>LoadAverage</span><span class='p'>.</span><span class='n'>ning</span><span class='p'>:</span><span class='n'>predict</span><span class='p'>(</span><span class='n'>SystemLoadAverage</span><span class='p'>,</span> <span class='mi'>0</span><span class='p'>.</span><span class='mi'>2</span><span class='p'>,</span> <span class='mi'>0</span><span class='p'>.</span><span class='mi'>01</span><span class='p'>)</span>
+</code></pre>
+</div>
+<p>Configuration:</p>
+<div class='highlight'><pre><code class='xml'><span class='nt'>&lt;plugin-view</span>
+    <span class='na'>namespace=</span><span class='s'>&quot;ning&quot;</span>
+    <span class='na'>name=</span><span class='s'>&quot;predict&quot;</span>
+    <span class='na'>factory-class=</span><span class='s'>&quot;com.ning.metrics.realtime.esper.HoltWintersViewFactory&quot;</span><span class='nt'>/&gt;</span>
+</code></pre>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='high_deviation'>High deviation</h1>
+<div class='center'>
+<p><img src='images/HW-anomalie-cpu-raw.js.png' alt='OpenTSDB' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='smoothing_and_deviation'>Smoothing and deviation</h1>
+<div class='center'>
+<p><img src='images/HW-anomalie-cpu-raw-zoom.js.png' alt='OpenTSDB' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='confidence_bands'>Confidence bands</h1>
+<div class='center'>
+<p><img src='images/ConfidenceBands.js.png' alt='OpenTSDB' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='esper_query'>Esper query</h1>
+<div class='highlight'><pre><code class='sql'><span class='k'>insert</span> <span class='k'>into</span> <span class='n'>HWStream</span>
+<span class='k'>select</span>
+  <span class='n'>lastRaw</span> <span class='k'>as</span> <span class='n'>raw</span>
+<span class='p'>,</span> <span class='n'>forecast</span>
+<span class='p'>,</span> <span class='n'>deviation</span>
+<span class='k'>from</span> <span class='n'>LoadAverage</span><span class='p'>.</span><span class='n'>ning</span><span class='p'>:</span><span class='n'>predict</span><span class='p'>(</span><span class='n'>SystemLoadAverage</span><span class='p'>,</span> <span class='mi'>0</span><span class='p'>.</span><span class='mi'>3</span><span class='p'>,</span> <span class='mi'>0</span><span class='p'>.</span><span class='mi'>1</span><span class='p'>);</span>
+
+<span class='k'>select</span> <span class='k'>timestamp</span><span class='p'>,</span> <span class='n'>raw</span><span class='p'>,</span> <span class='n'>forecast</span> <span class='k'>from</span> <span class='n'>HWStream</span><span class='p'>;</span>
+
+<span class='k'>select</span>
+  <span class='k'>timestamp</span>
+<span class='p'>,</span> <span class='n'>forecast</span> <span class='o'>+</span> <span class='mi'>2</span><span class='p'>.</span><span class='mi'>5</span> <span class='o'>*</span> <span class='k'>avg</span><span class='p'>(</span><span class='n'>deviation</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>upper_bend</span>
+<span class='p'>,</span> <span class='n'>forecast</span> <span class='o'>-</span> <span class='mi'>2</span><span class='p'>.</span><span class='mi'>5</span> <span class='o'>*</span> <span class='k'>avg</span><span class='p'>(</span><span class='n'>deviation</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>lower_bend</span>
+<span class='k'>from</span> <span class='n'>HWStream</span><span class='p'>.</span><span class='n'>win</span><span class='p'>:</span><span class='n'>time</span><span class='p'>(</span><span class='mi'>12</span> <span class='n'>sec</span><span class='p'>);</span>
+</code></pre>
+</div>
+</div>
+
+	<div class="slide">
+	<div class='center'>
+<p><img src='images/rt-architecture.png' alt='Realtime architecture' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='demo'>Demo!</h1>
+<div class='center'>
+<p><img src='images/prediction_demo.jpg' alt='Demo' /></p>
+</div>
+</div>
+
+	<div class="slide">
+	<h1 id='future_work'>Future work</h1>
+
+<ul>
+<li>Alerting (beyond first pass)</li>
+
+<li>Replace OpenTSDB</li>
+
+<li>Integrate with Arecibo</li>
+
+<li>Large-scale (tons of metrics)</li>
+</ul>
+</div>
+
+	<div class="slide">
+	<h1 id='references'>References</h1>
+
+<ul>
+<li><a href='http://www.usenix.org/events/lisa00/full_papers/brutlag/brutlag_html/'>Brutlag JD. Aberrant behavior detection in time series for network monitoring.</a></li>
+
+<li><a href='http://www.evanmiller.org/poisson.pdf'>Evan Miller. Holt-Winters Forecasting Applied to Poisson Processes in Real-Time.</a></li>
+</ul>
+</div>
+
+	<div class="slide">
+	<h1 id='questions'>Questions?</h1>
+
+<h2 id='code_and_slides_available_at_githubcomning'>Code and slides available at <a href='http://github.com/ning/meteo'>github.com/ning</a></h2>
+</div>
+
+</body>
+</html>

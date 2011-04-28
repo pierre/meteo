@@ -1,0 +1,17 @@
+<h1 id='esper_query'>Esper query</h1>
+<div class='highlight'><pre><code class='sql'><span class='k'>insert</span> <span class='k'>into</span> <span class='n'>HWStream</span>
+<span class='k'>select</span>
+  <span class='n'>lastRaw</span> <span class='k'>as</span> <span class='n'>raw</span>
+<span class='p'>,</span> <span class='n'>forecast</span>
+<span class='p'>,</span> <span class='n'>deviation</span>
+<span class='k'>from</span> <span class='n'>LoadAverage</span><span class='p'>.</span><span class='n'>ning</span><span class='p'>:</span><span class='n'>predict</span><span class='p'>(</span><span class='n'>SystemLoadAverage</span><span class='p'>,</span> <span class='mi'>0</span><span class='p'>.</span><span class='mi'>3</span><span class='p'>,</span> <span class='mi'>0</span><span class='p'>.</span><span class='mi'>1</span><span class='p'>);</span>
+
+<span class='k'>select</span> <span class='k'>timestamp</span><span class='p'>,</span> <span class='n'>raw</span><span class='p'>,</span> <span class='n'>forecast</span> <span class='k'>from</span> <span class='n'>HWStream</span><span class='p'>;</span>
+
+<span class='k'>select</span>
+  <span class='k'>timestamp</span>
+<span class='p'>,</span> <span class='n'>forecast</span> <span class='o'>+</span> <span class='mi'>2</span><span class='p'>.</span><span class='mi'>5</span> <span class='o'>*</span> <span class='k'>avg</span><span class='p'>(</span><span class='n'>deviation</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>upper_bend</span>
+<span class='p'>,</span> <span class='n'>forecast</span> <span class='o'>-</span> <span class='mi'>2</span><span class='p'>.</span><span class='mi'>5</span> <span class='o'>*</span> <span class='k'>avg</span><span class='p'>(</span><span class='n'>deviation</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>lower_bend</span>
+<span class='k'>from</span> <span class='n'>HWStream</span><span class='p'>.</span><span class='n'>win</span><span class='p'>:</span><span class='n'>time</span><span class='p'>(</span><span class='mi'>12</span> <span class='n'>sec</span><span class='p'>);</span>
+</code></pre>
+</div>

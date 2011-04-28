@@ -1,0 +1,19 @@
+<h1 id='bad_logging'>Bad logging</h1>
+<div class='highlight'><pre><code class='java'><span class='o'>---</span> <span class='n'>ActiveMQSender</span><span class='o'>.</span><span class='na'>java</span><span class='o'>.</span><span class='na'>old</span>
+<span class='o'>+++</span> <span class='n'>ActiveMQSender</span><span class='o'>.</span><span class='na'>java</span>
+<span class='err'>@@</span> <span class='o'>-</span><span class='mi'>23</span><span class='o'>,</span><span class='mi'>7</span> <span class='o'>+</span><span class='mi'>23</span><span class='o'>,</span><span class='mi'>6</span> <span class='err'>@@</span>
+         <span class='o'>}</span>
+         <span class='k'>catch</span> <span class='o'>(</span><span class='n'>JMSException</span> <span class='n'>e</span><span class='o'>)</span> <span class='o'>{</span>
+             <span class='c1'>// Connection flacky, maybe got dropped? ActiveMQ died?</span>
+<span class='o'>-</span>            <span class='n'>logger</span><span class='o'>.</span><span class='na'>warn</span><span class='o'>(</span><span class='s'>&quot;Unable to send message: &quot;</span> <span class='o'>+</span> <span class='n'>event</span><span class='o'>,</span> <span class='n'>e</span><span class='o'>);</span>
+             <span class='n'>requestReconnection</span><span class='o'>();</span>
+         <span class='o'>}</span>
+</code></pre>
+</div>
+<p>Among fixes:</p>
+
+<ul>
+<li>output every X failures</li>
+
+<li>don&#8217;t flush logs</li>
+</ul>

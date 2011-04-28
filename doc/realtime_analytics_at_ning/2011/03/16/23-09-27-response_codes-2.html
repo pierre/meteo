@@ -1,0 +1,22 @@
+<h1 id='esper_query'>Esper query</h1>
+<div class='highlight'><pre><code class='sql'><span class='k'>select</span>
+  <span class='n'>istream</span> <span class='k'>count</span><span class='p'>(</span><span class='n'>responseCode</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>twoxx</span>
+<span class='k'>from</span> <span class='n'>FrontDoorVisit</span><span class='p'>.</span><span class='n'>win</span><span class='p'>:</span><span class='n'>time</span><span class='p'>(</span><span class='mi'>10</span> <span class='n'>sec</span><span class='p'>)</span>
+<span class='k'>where</span> <span class='n'>responseCode</span> <span class='o'>&gt;=</span> <span class='mi'>200</span> <span class='k'>and</span> <span class='n'>responseCode</span> <span class='o'>&lt;</span> <span class='mi'>300</span>
+
+<span class='k'>select</span>
+  <span class='n'>istream</span> <span class='k'>count</span><span class='p'>(</span><span class='n'>responseCode</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>threexx</span>
+<span class='k'>from</span> <span class='n'>FrontDoorVisit</span><span class='p'>.</span><span class='n'>win</span><span class='p'>:</span><span class='n'>time</span><span class='p'>(</span><span class='mi'>10</span> <span class='n'>sec</span><span class='p'>)</span>
+<span class='k'>where</span> <span class='n'>responseCode</span> <span class='o'>&gt;=</span> <span class='mi'>300</span> <span class='k'>and</span> <span class='n'>responseCode</span> <span class='o'>&lt;</span> <span class='mi'>400</span>
+
+<span class='k'>select</span>
+  <span class='n'>istream</span> <span class='k'>count</span><span class='p'>(</span><span class='n'>responseCode</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>fourxx</span>
+<span class='k'>from</span> <span class='n'>FrontDoorVisit</span><span class='p'>.</span><span class='n'>win</span><span class='p'>:</span><span class='n'>time</span><span class='p'>(</span><span class='mi'>10</span> <span class='n'>sec</span><span class='p'>)</span>
+<span class='k'>where</span> <span class='n'>responseCode</span> <span class='o'>&gt;=</span> <span class='mi'>400</span> <span class='k'>and</span> <span class='n'>responseCode</span> <span class='o'>&lt;</span> <span class='mi'>500</span>
+
+<span class='k'>select</span>
+  <span class='n'>istream</span> <span class='k'>count</span><span class='p'>(</span><span class='n'>responseCode</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>fivexx</span>
+<span class='k'>from</span> <span class='n'>FrontDoorVisit</span><span class='p'>.</span><span class='n'>win</span><span class='p'>:</span><span class='n'>time</span><span class='p'>(</span><span class='mi'>10</span> <span class='n'>sec</span><span class='p'>)</span>
+<span class='k'>where</span> <span class='n'>responseCode</span> <span class='o'>&gt;=</span> <span class='mi'>500</span>
+</code></pre>
+</div>

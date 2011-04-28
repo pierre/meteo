@@ -1,0 +1,29 @@
+<div class='highlight'><pre><code class='java'><span class='kd'>public</span> <span class='kt'>boolean</span> <span class='nf'>sendMessage</span><span class='o'>(</span><span class='n'>Event</span> <span class='n'>event</span><span class='o'>)</span>
+    <span class='o'>{</span>
+        <span class='kt'>boolean</span> <span class='n'>success</span> <span class='o'>=</span> <span class='kc'>false</span><span class='o'>;</span>
+
+        <span class='n'>MessageProducer</span> <span class='n'>producer</span> <span class='o'>=</span> <span class='kc'>null</span><span class='o'>;</span>
+        <span class='k'>try</span> <span class='o'>{</span>
+            <span class='c1'>// Create the destination</span>
+            <span class='kd'>final</span> <span class='n'>ActiveMQTopic</span> <span class='n'>topic</span> <span class='o'>=</span> <span class='k'>new</span> <span class='n'>ActiveMQTopic</span><span class='o'>(</span><span class='n'>event</span><span class='o'>.</span><span class='na'>getType</span><span class='o'>());</span>
+
+            <span class='c1'>// Create a MessageProducer from the Session to the Topic</span>
+            <span class='n'>producer</span> <span class='o'>=</span> <span class='n'>session</span><span class='o'>.</span><span class='na'>createProducer</span><span class='o'>(</span><span class='n'>topic</span><span class='o'>);</span>
+            <span class='n'>producer</span><span class='o'>.</span><span class='na'>setDeliveryMode</span><span class='o'>(</span><span class='n'>DeliveryMode</span><span class='o'>.</span><span class='na'>NON_PERSISTENT</span><span class='o'>);</span>
+            <span class='n'>producer</span><span class='o'>.</span><span class='na'>setTimeToLive</span><span class='o'>(</span><span class='n'>messagesTTLMilliseconds</span><span class='o'>);</span>
+
+            <span class='n'>TextMessage</span> <span class='n'>message</span> <span class='o'>=</span> <span class='n'>session</span><span class='o'>.</span><span class='na'>createTextMessage</span><span class='o'>(</span><span class='n'>event</span><span class='o'>.</span><span class='na'>toJSON</span><span class='o'>());</span>
+
+            <span class='c1'>// Tell the producer to send the message</span>
+            <span class='n'>producer</span><span class='o'>.</span><span class='na'>send</span><span class='o'>(</span><span class='n'>message</span><span class='o'>);</span>
+        <span class='o'>}</span>
+        <span class='k'>catch</span> <span class='o'>(</span><span class='n'>JMSException</span> <span class='n'>e</span><span class='o'>)</span> <span class='o'>{</span>
+            <span class='c1'>// Connection flacky, maybe got dropped? ActiveMQ enpoint died?</span>
+            <span class='n'>logger</span><span class='o'>.</span><span class='na'>warn</span><span class='o'>(</span><span class='s'>&quot;Unable to send message: &quot;</span> <span class='o'>+</span> <span class='n'>event</span><span class='o'>,</span> <span class='n'>e</span><span class='o'>);</span>
+            <span class='n'>requestReconnection</span><span class='o'>();</span>
+        <span class='o'>}</span>
+
+        <span class='k'>return</span> <span class='n'>success</span>
+    <span class='o'>}</span>
+</code></pre>
+</div>

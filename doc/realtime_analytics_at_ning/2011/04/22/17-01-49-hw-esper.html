@@ -1,0 +1,15 @@
+<h1 id='hw_in_esper'>HW in Esper</h1>
+<div class='highlight'><pre><code class='sql'><span class='k'>select</span>
+  <span class='n'>lastRaw</span> <span class='k'>as</span> <span class='n'>raw</span>
+<span class='p'>,</span> <span class='n'>forecast</span>
+<span class='p'>,</span> <span class='n'>deviation</span>
+<span class='k'>from</span> <span class='n'>LoadAverage</span><span class='p'>.</span><span class='n'>ning</span><span class='p'>:</span><span class='n'>predict</span><span class='p'>(</span><span class='n'>SystemLoadAverage</span><span class='p'>,</span> <span class='mi'>0</span><span class='p'>.</span><span class='mi'>2</span><span class='p'>,</span> <span class='mi'>0</span><span class='p'>.</span><span class='mi'>01</span><span class='p'>)</span>
+</code></pre>
+</div>
+<p>Configuration:</p>
+<div class='highlight'><pre><code class='xml'><span class='nt'>&lt;plugin-view</span>
+    <span class='na'>namespace=</span><span class='s'>&quot;ning&quot;</span>
+    <span class='na'>name=</span><span class='s'>&quot;predict&quot;</span>
+    <span class='na'>factory-class=</span><span class='s'>&quot;com.ning.metrics.realtime.esper.HoltWintersViewFactory&quot;</span><span class='nt'>/&gt;</span>
+</code></pre>
+</div>

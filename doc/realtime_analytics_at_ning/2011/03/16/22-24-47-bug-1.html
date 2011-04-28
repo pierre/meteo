@@ -1,0 +1,14 @@
+<h1 id='producers_leak'>Producers leak</h1>
+<div class='highlight'><pre><code class='java'><span class='o'>---</span> <span class='n'>ActiveMQSender</span><span class='o'>.</span><span class='na'>java</span><span class='o'>.</span><span class='na'>old</span>
+<span class='o'>+++</span> <span class='n'>ActiveMQSender</span><span class='o'>.</span><span class='na'>java</span>
+<span class='err'>@@</span> <span class='o'>-</span><span class='mi'>25</span><span class='o'>,</span><span class='mi'>6</span> <span class='o'>+</span><span class='mi'>23</span><span class='o'>,</span><span class='mi'>8</span> <span class='err'>@@</span>
+             <span class='c1'>// Connection flacky, maybe got dropped? ActiveMQ died?</span>
+             <span class='n'>logger</span><span class='o'>.</span><span class='na'>warn</span><span class='o'>(</span><span class='s'>&quot;Unable to send message: &quot;</span> <span class='o'>+</span> <span class='n'>event</span><span class='o'>,</span> <span class='n'>e</span><span class='o'>);</span>
+             <span class='n'>requestReconnection</span><span class='o'>();</span>
+<span class='o'>+</span>        <span class='o'>}</span> <span class='k'>finally</span> <span class='o'>{</span>
+<span class='o'>+</span>            <span class='n'>producer</span><span class='o'>?.</span><span class='na'>close</span><span class='o'>();</span> <span class='c1'>// One day...</span>
+         <span class='o'>}</span>
+
+         <span class='k'>return</span> <span class='n'>success</span>
+</code></pre>
+</div>

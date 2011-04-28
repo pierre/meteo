@@ -1,0 +1,5 @@
+# Graphite: the bad
+
+* Poor documentation
+* Hard to debug
+* Scalability?

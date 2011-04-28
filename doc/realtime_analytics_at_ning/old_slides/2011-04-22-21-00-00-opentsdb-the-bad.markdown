@@ -1,0 +1,4 @@
+# OpenTSDB: the bad
+
+* UI (limited, e.g. cannot save)
+* Need to create metrics manually

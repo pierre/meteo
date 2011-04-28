@@ -1,0 +1,11 @@
+<h1 id='esper_query'>Esper query</h1>
+<div class='highlight'><pre><code class='sql'><span class='k'>select</span>
+  <span class='n'>istream</span> <span class='n'>tp</span><span class='p'>(</span><span class='mi'>90</span><span class='p'>,</span> <span class='n'>timeToFirstByte</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>tp90</span>
+<span class='p'>,</span> <span class='n'>tp</span><span class='p'>(</span><span class='mi'>99</span><span class='p'>,</span> <span class='n'>timeToFirstByte</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>tp99</span>
+<span class='p'>,</span> <span class='k'>count</span><span class='p'>(</span><span class='o'>*</span><span class='p'>)</span> <span class='k'>as</span> <span class='n'>visits</span>
+<span class='k'>from</span> <span class='n'>FrontDoorVisit</span><span class='p'>.</span><span class='n'>win</span><span class='p'>:</span><span class='n'>time</span><span class='p'>(</span><span class='mi'>60</span> <span class='n'>sec</span><span class='p'>)</span>
+<span class='k'>where</span> <span class='n'>responseCode</span> <span class='o'>&lt;</span> <span class='mi'>300</span>
+<span class='k'>and</span> <span class='p'>(</span><span class='n'>path</span> <span class='n'>regexp</span> <span class='s1'>&#39;($|/?+((?|#|&amp;).*$)?+)&#39;</span>
+  <span class='k'>or</span> <span class='n'>path</span> <span class='n'>regexp</span> <span class='s1'>&#39;/main($|/?+((?|#|&amp;).*$)?+)&#39;</span><span class='p'>)</span>
+</code></pre>
+</div>

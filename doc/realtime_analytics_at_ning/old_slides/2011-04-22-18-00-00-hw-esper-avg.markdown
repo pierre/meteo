@@ -1,0 +1,13 @@
+# HW in Esper
+
+{% highlight sql %}
+insert into HWStream
+select
+  lastRaw as raw
+, forecast
+, deviation
+from LoadAverage.ning:predict(SystemLoadAverage, 0.2, 0.01);
+
+select raw, forecast from HWStream;
+select avg(deviation) as deviation from HWStream.win:time(2 sec);
+{% endhighlight %}
