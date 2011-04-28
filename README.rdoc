@@ -1,0 +1,198 @@
+= Meteo
+
+Meteo is a realtime event processing engine. It can get time series data from a variety of sources and leverages Esper to do runtime analysis.
+Meteo can output data to different rendering engines for graphing purposes.
+
+== Listeners
+
+Meteo can currently take data from:
+
+* Flat files
+* Netezza
+* ActiveMQ
+* JMX
+
+== Publishers
+
+Meteo can currently publish data to:
+
+* Flat files
+* Arecibo
+* Graphite
+* OpenTSDB
+* Reconnoiter (via Resmon)
+
+== Build
+
+    mvn clean install
+
+== Run
+
+    java -Drt.configFile=rt_conf.json -Drt.esper.configFile=esper_conf.xml -Xmx4096m -Xms2048m -jar metrics.mateo-1.0.1-jar-with-dependencies.jar
+
+= Configuration
+
+== Publisher and listeners
+
+This configuration file contains sample configurations for all currently defined publisher and subscriber types plus sample Esper statements:
+
+    {
+        "subscribers": [
+            {
+                "name": "AMQ",
+                "type": "com.ning.metrics.meteo.subscribers.AMQSubscriber",
+                "@class": "com.ning.metrics.meteo.subscribers.AMQSubscriberConfig",
+                "protocol": "tcp",
+                "host": "127.0.0.1",
+                "port": 35000,
+                "topic": "PerfEvent",
+                "eventOutputName": "PerfEvent",
+                "enabled": false
+            },
+            {
+                "name": "AMQ2",
+                "type": "com.ning.metrics.meteo.subscribers.AMQSubscriber",
+                "@class": "com.ning.metrics.meteo.subscribers.AMQSubscriberConfig",
+                "protocol": "tcp",
+                "host": "127.0.0.1",
+                "port": 35000,
+                "topic": "MyOtherTopic",
+                "eventOutputName": "MyOtherTopic",
+                "enabled": false
+            },
+            {
+                "name": "JMX",
+                "type": "com.ning.metrics.meteo.subscribers.JMXSubscriber",
+                "@class": "com.ning.metrics.meteo.subscribers.JMXSubscriberConfig",
+                "host": "127.0.0.1",
+                "query": "java.lang:type=OperatingSystem",
+                "attributes": "SystemLoadAverage",
+                "eventOutputName": "LoadAverage",
+                "enabled": false
+            },
+            {
+                "name": "Netezza",
+                "type": "com.ning.metrics.meteo.subscribers.NetezzaSubscriber",
+                "@class": "com.ning.metrics.meteo.subscribers.NetezzaSubscriberConfig",
+                "sqlQuery": "select html_time from visit_logs order by visit_date asc",
+                "host": "netezza.company.com",
+                "username": "pierre",
+                "password": "pierre",
+                "database": "visit",
+                "eventOutputName": "visit",
+                "enabled": false
+            },
+            {
+                "name": "File",
+                "type": "com.ning.metrics.meteo.subscribers.FileSubscriber",
+                "@class": "com.ning.metrics.meteo.subscribers.FileSubscriberConfig",
+                "filePath": "/var/tmp/someFile.csv",
+                "attributes": "SystemLoadAverage",
+                "eventOutputName": "LoadAverage",
+                "enabled": false
+            }
+        ],
+
+        "publishers": [
+            {
+                "name": "Debug",
+                "type": "com.ning.metrics.meteo.publishers.DebugListener",
+                "@class": "com.ning.metrics.meteo.publishers.DebugPublisherConfig"
+            },
+            {
+                "name": "File",
+                "type": "com.ning.metrics.meteo.publishers.FileListener",
+                "@class": "com.ning.metrics.meteo.publishers.FilePublisherConfig",
+                "path": "/var/tmp/demo.csv"
+            },
+            {
+                "name": "Resmon",
+                "type": "com.ning.metrics.meteo.publishers.ResmonListener",
+                "@class": "com.ning.metrics.meteo.publishers.ResmonPublisherConfig",
+                "host": "127.0.0.1",
+                "port": 8083
+            },
+            {
+                "name": "Graphite",
+                "type": "com.ning.metrics.meteo.publishers.GraphiteListener",
+                "@class": "com.ning.metrics.meteo.publishers.GraphitePublisherConfig",
+                "host": "127.0.0.1",
+                "port": 2003
+            },
+            {
+                "name": "Arecibo",
+                "type": "com.ning.metrics.meteo.publishers.AreciboListener",
+                "@class": "com.ning.metrics.meteo.publishers.AreciboPublisherConfig",
+                "host": "127.0.0.1",
+                "port": 8080
+            },
+            {
+                "name": "OpenTSDB",
+                "type": "com.ning.metrics.meteo.publishers.OpenTSDBListener",
+                "@class": "com.ning.metrics.meteo.publishers.OpenTSDBPublisherConfig",
+                "host": "127.0.0.1",
+                "port": 4242
+            }
+        ],
+
+        "streams": [
+            {
+                "name": "Performance metrics",
+
+                "sql": [
+                    "insert into RawPerfStream select html_time from PerfEvent",
+                    "insert into HWPerfStream select lastRaw as raw, forecast, deviation, smoothedDeviation from RawPerfStream.ning:predict(html_time, 0.3, 0.1)",
+                    "select raw, forecast from HWPerfStream",
+                    "select forecast + 2.5 * avg(deviation) as upper_band, forecast - 2.5 * avg(deviation) as lower_band from HWPerfStream.win:time(12 sec)"
+                ],
+
+                "routes": [
+                    {
+                        "name": "OpenTSDB",
+                        "filters": [ "raw", "forecast", "deviation", "upper_band", "lower_band" ],
+                        "prefix": "Perf.html_render_time"
+                    }
+                ]
+            }
+        ]
+    }
+
+== Esper
+
+All events that esper should process, need to be declared in the esper configuration file beforehand. A sample configuration file looks like this:
+
+    <esper-configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         xsi:noNamespaceSchemaLocation="esper-configuration-1-0.xsd">
+        <event-type name="PerfEvent">
+            <java-util-map>
+                <map-property name="html_time" class="long"/>
+            </java-util-map>
+        </event-type>
+        <event-type name="LoadAverage">
+            <java-util-map>
+                <map-property name="timestamp" class="long"/>
+                <map-property name="SystemLoadAverage" class="long"/>
+            </java-util-map>
+        </event-type>
+        <plugin-aggregation-function name="tp" function-class="com.ning.metrics.meteo.esper.TPAggregator"/>
+        <plugin-view namespace="ning" name="predict"
+                     factory-class="com.ning.metrics.meteo.esper.HoltWintersViewFactory"/>
+    </esper-configuration>
+
+For more info see http://esper.codehaus.org/esper-4.2.0/doc/reference/en/html/configuration.html#configuration-via-xml
+
+= License (see LICENSE-2.0.txt file for full license)
+
+Copyright 2010-2011 Ning
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
