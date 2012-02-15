@@ -18,8 +18,8 @@ package com.ning.metrics.meteo.publishers;
 
 class ResourcePublisherConfig extends PublisherConfig
 {
-    private long cacheExpirySeconds = 30;
-    private long cacheMaxSize = 10000;
+    private long cacheExpirySeconds = 90;
+    private long cacheMaxSize = 100000;
 
     public long getCacheExpirySeconds()
     {
