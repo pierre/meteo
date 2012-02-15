@@ -39,6 +39,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
@@ -82,8 +85,20 @@ public class StreamResource
 
             if (samples != null) {
                 final ConcurrentMap<Object, Object> samplesForType = samples.asMap();
+
+                final List<DateTime> timestamps = new ArrayList<DateTime>();
                 for (final Object timestamp : samplesForType.keySet()) {
-                    generator.writeString(String.format("%s,%s", unixSeconds((DateTime) timestamp), samplesForType.get(timestamp)));
+                    timestamps.add((DateTime) timestamp);
+                }
+                Collections.sort(timestamps);
+
+                for (final DateTime timestamp : timestamps) {
+                    final Object dataPoint = samplesForType.get(timestamp);
+                    // Might have been evicted already
+                    if (dataPoint != null) {
+                        generator.writeNumber(unixSeconds(timestamp));
+                        generator.writeNumber((Long) dataPoint);
+                    }
                 }
             }
 
