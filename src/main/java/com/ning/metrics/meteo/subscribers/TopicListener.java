@@ -17,12 +17,14 @@
 package com.ning.metrics.meteo.subscribers;
 
 import com.espertech.esper.client.EPServiceProvider;
-import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -32,7 +34,7 @@ import java.util.Map;
 
 class TopicListener implements MessageListener
 {
-    private final Logger log = Logger.getLogger(TopicListener.class);
+    private final Logger log = LoggerFactory.getLogger(TopicListener.class);
 
     private final String esperTopicKey;
     private final ObjectMapper mapper;
@@ -76,6 +78,50 @@ class TopicListener implements MessageListener
             catch (IOException ex) {
                 log.warn("Got an error from the message queue", ex);
             }
+        }
+        else if (message instanceof BytesMessage) {
+            final BytesMessage byteMessage = (BytesMessage) message;
+            long llen;
+            try {
+                llen = byteMessage.getBodyLength();
+            }
+            catch (JMSException e) {
+                log.warn("Unable to get message length", e);
+                return;
+            }
+
+            if (llen > Integer.MAX_VALUE) { // should never occur but...
+                log.error("Ridiculously huge message payload, above 32-bit length");
+            }
+            else {
+                final int len = (int) llen;
+                final byte[] data = new byte[len];
+                final int readLen;
+                try {
+                    readLen = byteMessage.readBytes(data);
+                }
+                catch (JMSException e) {
+                    log.warn("Unable to get message bytes", e);
+                    return;
+                }
+
+                if (readLen < len) {
+                    log.error("Failed to read byte message contents; read {}, was trying to read {}", readLen, data.length);
+                }
+                else {
+                    final Map event;
+                    try {
+                        event = mapper.readValue(data, Map.class);
+                        esperSink.getEPRuntime().sendEvent(event, esperTopicKey);
+                    }
+                    catch (IOException e) {
+                        log.error("Failed to convert message to Esper Event", readLen, data.length);
+                    }
+                }
+            }
+        }
+        else {
+            log.error("Unexpected message type '{}' from AMQ broker: must skip", message.getClass().getName());
         }
     }
 }
