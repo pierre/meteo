@@ -16,6 +16,12 @@
 
 package com.ning.metrics.meteo.publishers;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPStatement;
 import com.espertech.esper.client.UpdateListener;
@@ -23,14 +29,12 @@ import com.google.inject.Inject;
 import com.ning.metrics.meteo.binder.StreamConfig;
 import org.apache.log4j.Logger;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.LinkedHashMap;
-import java.util.List;
-
 public class PublishersCompiler
 {
     private static final Logger log = Logger.getLogger(PublishersCompiler.class);
+
+    // Mapping publisher class -> instance
+    private final Map<String, UpdateListener> publisherInstances = new LinkedHashMap<String, UpdateListener>();
 
     @Inject
     public PublishersCompiler(List<StreamConfig> streams, EPServiceProvider epService)
@@ -41,6 +45,7 @@ public class PublishersCompiler
                 for (PublisherConfig route : stream.getPublishers()) {
                     publishers.put(route.getType(), instantiateUpdateListener(route));
                 }
+                publisherInstances.putAll(publishers);
 
                 for (String sqlStatement : stream.getSql()) {
                     EPStatement epl = epService.getEPAdministrator().createEPL(sqlStatement);
@@ -51,15 +56,14 @@ public class PublishersCompiler
 
                 }
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             log.error("Could not instantiate the publishers", ex);
         }
     }
 
     // We need a better way to do that, see http://jira.codehaus.org/browse/JACKSON-453
     static UpdateListener instantiateUpdateListener(PublisherConfig publisherConfig)
-        throws ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException
     {
         String listenerType = publisherConfig.getType();
         Class listenerClass = Class.forName(listenerType);
@@ -69,8 +73,7 @@ public class PublishersCompiler
         for (Constructor<?> constructor : listenerClass.getConstructors()) {
             if (constructor.getParameterTypes() == null || constructor.getParameterTypes().length == 0) {
                 defaultConstructor = constructor;
-            }
-            else if (constructor.getParameterTypes().length == 1) {
+            } else if (constructor.getParameterTypes().length == 1) {
                 configConstructor = constructor;
             }
         }
@@ -80,14 +83,17 @@ public class PublishersCompiler
         if (configConstructor != null) {
             Class listenerConfigClass = configConstructor.getParameterTypes()[0];
             listener = (UpdateListener) configConstructor.newInstance(listenerConfigClass.cast(publisherConfig));
-        }
-        else if (defaultConstructor != null) {
+        } else if (defaultConstructor != null) {
             listener = (UpdateListener) defaultConstructor.newInstance();
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Can't find a suitable constructor in subscribers class " + listenerClass.getName());
         }
 
         return listener;
+    }
+
+    public Map<String, UpdateListener> getPublisherInstances()
+    {
+        return publisherInstances;
     }
 }

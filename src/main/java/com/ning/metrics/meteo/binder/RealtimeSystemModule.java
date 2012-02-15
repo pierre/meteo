@@ -16,6 +16,14 @@
 
 package com.ning.metrics.meteo.binder;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.espertech.esper.client.Configuration;
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
@@ -24,18 +32,15 @@ import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
 import com.ning.metrics.meteo.publishers.PublisherConfig;
 import com.ning.metrics.meteo.publishers.PublishersCompiler;
+import com.ning.metrics.meteo.publishers.ResourceListener;
 import com.ning.metrics.meteo.subscribers.SubscriberConfig;
 import com.ning.metrics.meteo.subscribers.SubscribersCompiler;
 import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.skife.config.ConfigurationObjectFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.management.MBeanServer;
 
 public class RealtimeSystemModule implements Module
 {
@@ -51,6 +56,11 @@ public class RealtimeSystemModule implements Module
     @Override
     public void configure(Binder binder)
     {
+        binder.bind(MBeanServer.class).toInstance(ManagementFactory.getPlatformMBeanServer());
+
+        // Jetty/Jersey stuff
+        binder.bind(JacksonJsonProvider.class).asEagerSingleton();
+
         // Main configuration file
         RealtimeSystemConfig config = new ConfigurationObjectFactory(System.getProperties()).build(RealtimeSystemConfig.class);
         binder.bind(RealtimeSystemConfig.class).toInstance(config);
@@ -69,8 +79,7 @@ public class RealtimeSystemModule implements Module
         StatementsConfig statementsConfig;
         try {
             statementsConfig = mapper.readValue(new File(config.getConfigurationFile()), StatementsConfig.class);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Unable to parse the main configuration file", e);
         }
 

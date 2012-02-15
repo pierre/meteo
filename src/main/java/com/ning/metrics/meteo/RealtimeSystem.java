@@ -18,18 +18,46 @@ package com.ning.metrics.meteo;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.servlet.ServletModule;
 import com.ning.metrics.meteo.binder.RealtimeSystemModule;
+import com.ning.metrics.meteo.server.JettyServer;
 import com.ning.metrics.meteo.subscribers.SubscribersCompiler;
+import com.sun.jersey.api.core.PackagesResourceConfig;
+import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+import org.eclipse.jetty.servlet.DefaultServlet;
 
-import java.io.IOException;
+import java.util.HashMap;
 
 public class RealtimeSystem
 {
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws Exception
     {
-        Injector injector = Guice.createInjector(new RealtimeSystemModule());
+        Injector injector = Guice.createInjector(
+            new RealtimeSystemModule(),
+            new ServletModule()
+            {
+                @Override
+                protected void configureServlets()
+                {
+                    // Static files
+                    bind(DefaultServlet.class).asEagerSingleton();
+                    serve("/media/*").with(DefaultServlet.class);
+
+                    serve("*").with(GuiceContainer.class, new HashMap<String, String>()
+                    {
+                        {
+                            put(PackagesResourceConfig.PROPERTY_PACKAGES, "com.ning.metrics.meteo.server.resources");
+                        }
+                    });
+                }
+            }
+        );
 
         final SubscribersCompiler subscribersCompiler = injector.getInstance(SubscribersCompiler.class);
+        subscribersCompiler.startAll();
+
+        final JettyServer jetty = injector.getInstance(JettyServer.class);
+        jetty.start(injector);
 
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
@@ -37,9 +65,8 @@ public class RealtimeSystem
             public void run()
             {
                 subscribersCompiler.stopAll();
+                jetty.stop();
             }
         });
-
-        subscribersCompiler.startAll();
     }
 }

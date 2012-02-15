@@ -17,24 +17,33 @@
 package com.ning.metrics.meteo.binder;
 
 import org.skife.config.Config;
+import org.skife.config.Default;
 
-public class RealtimeSystemConfig
+public interface RealtimeSystemConfig
 {
+    @Config("rt.server.ip")
+    @Default("127.0.0.1")
+    String getLocalIp();
+
+    @Config("rt.server.port")
+    @Default("8080")
+    int getLocalPort();
+
+    @Config("rt.jetty.stats")
+    @Default("true")
+    boolean isJettyStatsOn();
+
     /**
      * @return main configuration file
      */
     @Config(value = "rt.configFile")
-    public String getConfigurationFile()
-    {
-        return "rt_conf.json";
-    }
+    @Default("rt_conf.json")
+    String getConfigurationFile();
 
     /**
      * @return configuration file for the Esper engine
      */
     @Config(value = "rt.esper.configFile")
-    public String getEsperConfigurationFile()
-    {
-        return "esper_conf.xml";
-    }
+    @Default("esper_conf.xml")
+    String getEsperConfigurationFile();
 }
