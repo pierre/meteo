@@ -65,7 +65,6 @@ public class ResourceListener implements UpdateListener
                 samplesForType = samplesCache.get(attribute);
                 if (samplesForType == null) {
                     samplesForType = CacheBuilder.newBuilder()
-                        .weakKeys()
                         .maximumSize(config.getCacheMaxSize())
                         .expireAfterWrite(config.getCacheExpirySeconds(), TimeUnit.SECONDS)
                         .build();
