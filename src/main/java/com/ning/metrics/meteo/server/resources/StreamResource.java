@@ -66,7 +66,13 @@ public class StreamResource
     }
 
     /**
-     * Get the data points associated with a field in an Esper query
+     * Get the data points associated with a field in an Esper query.
+     * For this to work, you need to add ResourceListener as a publisher:
+     * {
+     * "name": "Jansky",
+     * "type": "com.ning.metrics.meteo.publishers.ResourceListener",
+     * "@class": "com.ning.metrics.meteo.publishers.ResourcePublisherConfig"
+     * }
      *
      * @param callback  Javascript callback
      * @param attribute the SQL alias of an Esper query
@@ -78,8 +84,13 @@ public class StreamResource
     public Response getSamplesByRoute(@QueryParam("callback") @DefaultValue("callback") final String callback,
                                       @PathParam("attribute") final String attribute)
     {
-        final Map<String, Cache<Object, Object>> samples = resourceListener.getSamplesCache();
-        return buildJsonpResponse(attribute, samples.get(attribute), callback);
+        Cache<Object, Object> samplesCache = null;
+        if (resourceListener != null) {
+            final Map<String, Cache<Object, Object>> samples = resourceListener.getSamplesCache();
+            samplesCache = samples.get(attribute);
+        }
+
+        return buildJsonpResponse(attribute, samplesCache, callback);
     }
 
     /**
