@@ -30,9 +30,9 @@ import java.util.HashMap;
 
 public class RealtimeSystem
 {
-    public static void main(String[] args) throws Exception
+    public static void main(final String[] args) throws Exception
     {
-        Injector injector = Guice.createInjector(
+        final Injector injector = Guice.createInjector(
             new RealtimeSystemModule(),
             new ServletModule()
             {

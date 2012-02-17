@@ -21,7 +21,6 @@ public class DummyPublisherConfig extends PublisherConfig
     private String host;
     private Integer port;
     private String prefix;
-    private String timeAttr;
 
     public Integer getPort()
     {
@@ -51,15 +50,5 @@ public class DummyPublisherConfig extends PublisherConfig
     public void setPrefix(String prefix)
     {
         this.prefix = prefix;
-    }
-
-    public String getTimeAttribute()
-    {
-        return timeAttr;
-    }
-
-    public void setTimeAttribute(String timeAttr)
-    {
-        this.timeAttr = timeAttr;
     }
 }

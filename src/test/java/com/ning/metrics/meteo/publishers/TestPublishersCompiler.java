@@ -34,10 +34,10 @@ public class TestPublishersCompiler
         publisherConfig.setType("com.ning.metrics.meteo.publishers.DebugListener");
     }
 
-    @Test
+    @Test(groups = "fast")
     public void testInstantiateListener() throws Exception
     {
-        UpdateListener listener = PublishersCompiler.instantiateUpdateListener(publisherConfig);
+        final UpdateListener listener = PublishersCompiler.instantiateUpdateListener(publisherConfig);
         assertTrue(listener instanceof DebugListener);
     }
 }

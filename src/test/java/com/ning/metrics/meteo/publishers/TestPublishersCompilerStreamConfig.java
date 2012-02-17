@@ -14,21 +14,21 @@
  * under the License.
  */
 
-package com.ning.metrics.meteo.binder;
+package com.ning.metrics.meteo.publishers;
 
-import com.ning.metrics.meteo.publishers.DummyPublisherConfig;
-import com.ning.metrics.meteo.publishers.PublisherConfig;
+import com.ning.metrics.meteo.binder.StatementsConfig;
+import com.ning.metrics.meteo.binder.StreamConfig;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-public class TestRealtimeSystemModule
+public class TestPublishersCompilerStreamConfig
 {
     private StatementsConfig statementsConfig;
 
@@ -58,7 +58,7 @@ public class TestRealtimeSystemModule
         //                     {
         //                         "name": "OpenTSDB",
         //                         "filters": [ "predict", "tp90" ],
-        //                         "timeAttr": "visit_date"
+        //                         "timeAttribute": "visit_date"
         //                     }
         //                 ]
         //             }
@@ -67,33 +67,36 @@ public class TestRealtimeSystemModule
 
         statementsConfig = new StatementsConfig();
 
-        DummyPublisherConfig globalPublisherConfig = new DummyPublisherConfig();
+        final DummyPublisherConfig globalPublisherConfig = new DummyPublisherConfig();
         globalPublisherConfig.setName("OpenTSDB");
         globalPublisherConfig.setType("com.ning.metrics.meteo.publishers.OpenTSDBListener");
         globalPublisherConfig.setHost("opentsdb.company.com");
         globalPublisherConfig.setPort(4242);
         statementsConfig.setPublishers(Arrays.asList((PublisherConfig) globalPublisherConfig));
 
-        StreamConfig streamConfig = new StreamConfig();
+        final StreamConfig streamConfig = new StreamConfig();
         streamConfig.setName("TPs of Visit");
         streamConfig.setSql(Arrays.asList("select tp90 from visit output last every 1 second"));
-        HashMap<String, Object> localPublisherConfig = new HashMap<String, Object>();
+        final HashMap<String, Object> localPublisherConfig = new HashMap<String, Object>();
         localPublisherConfig.put("name", "OpenTSDB");
         localPublisherConfig.put("filters", (Arrays.asList("predict", "tp90")));
         localPublisherConfig.put("timeAttribute", "visit_date");
-        streamConfig.setRoutes(Arrays.asList(localPublisherConfig));
+        streamConfig.setRoutes(Arrays.<HashMap<String, Object>>asList(localPublisherConfig));
         statementsConfig.setStatementConfigs(Arrays.asList(streamConfig));
     }
 
-    @Test
+    @Test(groups = "fast")
     public void testInstantiateListener() throws Exception
     {
-        List<StreamConfig> statementsConfigs = RealtimeSystemModule.mergeRoutesAndGlobalPublishers(statementsConfig);
-        StreamConfig streamConfig = statementsConfigs.get(0);
-        PublisherConfig publisherConfig = streamConfig.getPublishers().get(0);
+        final PublishersCompiler compiler = new PublishersCompiler(statementsConfig.getPublishers(), new ArrayList<StreamConfig>(), null);
+        final StreamConfig streamConfig = statementsConfig.getStatements().get(0);
+        compiler.configurePublishersForStream(streamConfig);
+
+        final String streamName = streamConfig.getName();
+        final PublisherConfig publisherConfig = compiler.getStreamConfigs().get(streamName).getPublishers().get(0);
         assertTrue(publisherConfig instanceof DummyPublisherConfig);
 
-        DummyPublisherConfig config = (DummyPublisherConfig) publisherConfig;
+        final DummyPublisherConfig config = (DummyPublisherConfig) publisherConfig;
         assertEquals(config.getName(), "OpenTSDB");
         assertEquals(config.getType(), "com.ning.metrics.meteo.publishers.OpenTSDBListener");
         assertEquals(config.getHost(), "opentsdb.company.com");
