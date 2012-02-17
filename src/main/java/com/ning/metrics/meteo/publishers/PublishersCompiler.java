@@ -128,6 +128,7 @@ public class PublishersCompiler
                 log.info(String.format("Added publisher [%-50s] to [%s]", publisherType, sqlStatement));
                 epl.addListener(publishers.get(publisherType));
             }
+            epl.start();
         }
     }
 
