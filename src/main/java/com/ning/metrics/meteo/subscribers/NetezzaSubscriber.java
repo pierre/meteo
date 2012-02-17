@@ -17,8 +17,8 @@
 package com.ning.metrics.meteo.subscribers;
 
 import com.espertech.esper.client.EPServiceProvider;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
-import com.google.inject.internal.ImmutableList;
 import org.apache.log4j.Logger;
 import org.netezza.datasource.NzDatasource;
 
