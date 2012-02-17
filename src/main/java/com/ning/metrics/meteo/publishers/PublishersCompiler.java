@@ -116,9 +116,10 @@ public class PublishersCompiler
         // Instantiate its publisher(s)
         final LinkedHashMap<String, UpdateListener> publishers = new LinkedHashMap<String, UpdateListener>();
         for (final PublisherConfig route : streamConfig.getPublishers()) {
-            publishers.put(route.getType(), instantiateUpdateListener(route));
+            final UpdateListener updateListener = instantiateUpdateListener(route);
+            publishers.put(route.getType(), updateListener);
+            publisherInstances.put(streamConfig.getName(), updateListener);
         }
-        publisherInstances.putAll(publishers);
 
         // Add the stream in the Esper engine
         for (final String sqlStatement : streamConfig.getSql()) {

@@ -55,19 +55,17 @@ public class StreamResource
     private static final Logger log = LoggerFactory.getLogger(StreamResource.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final ResourceListener resourceListener;
     private final PublishersCompiler compiler;
 
     @Inject
     public StreamResource(final PublishersCompiler compiler)
     {
         this.compiler = compiler;
-        this.resourceListener = (ResourceListener) this.compiler.getPublisherInstances().get(ResourceListener.class.getName());
     }
 
     /**
      * Get the data points associated with a field in an Esper query.
-     * For this to work, you need to add ResourceListener as a publisher:
+     * For this to work, you need to add ResourceListener as a publisher and configure it in a stream:
      * {
      * "name": "Jansky",
      * "type": "com.ning.metrics.meteo.publishers.ResourceListener",
@@ -75,16 +73,20 @@ public class StreamResource
      * }
      *
      * @param callback  Javascript callback
+     * @param stream Stream name
      * @param attribute the SQL alias of an Esper query
      * @return jsonp representation of the data points in memory
      */
     @GET
-    @Path("/{attribute}")
+    @Path("/{stream}/{attribute}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSamplesByRoute(@QueryParam("callback") @DefaultValue("callback") final String callback,
+                                      @PathParam("stream") final String stream,
                                       @PathParam("attribute") final String attribute)
     {
         Cache<Object, Object> samplesCache = null;
+
+        final ResourceListener resourceListener = (ResourceListener) compiler.getPublisherInstances().get(stream);
         if (resourceListener != null) {
             final Map<String, Cache<Object, Object>> samples = resourceListener.getSamplesCache();
             samplesCache = samples.get(attribute);
@@ -103,6 +105,10 @@ public class StreamResource
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addStream(final StreamConfig streamConfig)
     {
+        if (compiler.getPublisherInstances().get(streamConfig.getName()) != null) {
+            return Response.status(Response.Status.CONFLICT).header("Warning", "199 Stream already exists").build();
+        }
+
         try {
             compiler.addStream(streamConfig);
         }
