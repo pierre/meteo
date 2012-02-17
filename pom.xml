@@ -103,7 +103,7 @@
         <dependency>
             <groupId>com.espertech</groupId>
             <artifactId>esper</artifactId>
-            <version>4.2.0</version>
+            <version>4.5.0</version>
         </dependency>
         <dependency><!-- Needed for stomp -->
             <groupId>com.thoughtworks.xstream</groupId>
