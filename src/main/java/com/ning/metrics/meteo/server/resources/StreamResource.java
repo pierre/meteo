@@ -97,7 +97,7 @@ public class StreamResource
                     // Might have been evicted already
                     if (dataPoint != null) {
                         generator.writeNumber(unixSeconds(timestamp));
-                        generator.writeNumber((Long) dataPoint);
+                        generator.writeObject(dataPoint);
                     }
                 }
             }
