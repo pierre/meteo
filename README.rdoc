@@ -181,6 +181,64 @@ All events that esper should process, need to be declared in the esper configura
 
 For more info see http://esper.codehaus.org/esper-4.2.0/doc/reference/en/html/configuration.html#configuration-via-xml
 
+== Adding routes at runtime
+
+There is a REST interface one can use to upload streams at runtime. For instance, if newStream.json is:
+
+    {
+        "name": "Counts",
+
+        "sql": [
+            "select count(*) as count from Visit.win:time(1 sec) "
+        ],
+
+        "routes": [
+            {
+                "name": "Jansky",
+                "filters": [ "count" ]
+            }
+        ]
+    }
+
+One can add it at runtime by POSTing it to /rest/1.0:
+
+    curl -v -XPOST http://127.0.0.1:8080/rest/1.0 -H'Content-type: application/json' -d@newStream.json
+
+== Exposing data over HTTP
+
+Meteo ships with a special publisher (com.ning.metrics.meteo.publishers.ResourceListener) to expose data over HTTP (jsonp). This is useful for graphing purposes (see https://github.com/pierre/metrics-dashboard for an example on how to use it with d3.js).
+
+To use it, you need to add it as a publisher and configure a stream appropriately:
+
+    "publishers": [
+        {
+            "name": "Jansky",
+            "type": "com.ning.metrics.meteo.publishers.ResourceListener",
+            "@class": "com.ning.metrics.meteo.publishers.ResourcePublisherConfig"
+        }
+    ],
+
+    "streams": [
+        {
+            "name": "Visitors",
+
+            "sql": [
+                "select sourceIpAddress as ip from Visit.win:time(1 sec)"
+            ],
+
+            "routes": [
+                {
+                    "name": "Jansky",
+                    "filters": [ "ip" ]
+                }
+            ]
+        }
+    ]
+
+You can now access the data via the /rest/1.0/{stream_name}/{esper_attribute} endpoint, e.g.:
+
+    curl http://127.0.0.1:8080/rest/1.0/Visitors/ip ; echo
+
 = License (see LICENSE-2.0.txt file for full license)
 
 Copyright 2010-2011 Ning
