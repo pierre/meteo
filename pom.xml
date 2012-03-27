@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.ning</groupId>
         <artifactId>metrics.base-pom</artifactId>
-        <version>0.0.18-SNAPSHOT</version>
+        <version>0.0.20</version>
     </parent>
     <groupId>com.ning</groupId>
     <artifactId>metrics.realtime</artifactId>
