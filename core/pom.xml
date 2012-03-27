@@ -22,10 +22,12 @@
         <groupId>com.ning</groupId>
         <artifactId>metrics.realtime-parent</artifactId>
         <version>1.0.2-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>com.ning</groupId>
     <artifactId>metrics.realtime-core</artifactId>
     <name>core</name>
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>com.espertech</groupId>
