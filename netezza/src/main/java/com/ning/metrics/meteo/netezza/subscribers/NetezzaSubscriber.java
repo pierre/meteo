@@ -14,13 +14,15 @@
  * under the License.
  */
 
-package com.ning.metrics.meteo.subscribers;
+package com.ning.metrics.meteo.netezza.subscribers;
 
 import com.espertech.esper.client.EPServiceProvider;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
-import org.apache.log4j.Logger;
+import com.ning.metrics.meteo.subscribers.Subscriber;
 import org.netezza.datasource.NzDatasource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -28,9 +30,9 @@ import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-class NetezzaSubscriber implements Subscriber
+public class NetezzaSubscriber implements Subscriber
 {
-    private final Logger log = Logger.getLogger(NetezzaSubscriber.class);
+    private final Logger log = LoggerFactory.getLogger(NetezzaSubscriber.class);
 
     private final EPServiceProvider esperSink;
     private final NetezzaSubscriberConfig subscriberConfig;
@@ -38,7 +40,7 @@ class NetezzaSubscriber implements Subscriber
     private final static LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
 
     @Inject
-    public NetezzaSubscriber(NetezzaSubscriberConfig subscriberConfig, EPServiceProvider esperSink)
+    public NetezzaSubscriber(final NetezzaSubscriberConfig subscriberConfig, final EPServiceProvider esperSink)
     {
         this.subscriberConfig = subscriberConfig;
         this.esperSink = esperSink;
@@ -47,9 +49,9 @@ class NetezzaSubscriber implements Subscriber
     @Override
     public void subscribe()
     {
-        List<LinkedHashMap<String, Object>> dataPoints = getDataPoints();
+        final List<LinkedHashMap<String, Object>> dataPoints = getDataPoints();
         log.info(String.format("Found %d data points", dataPoints.size()));
-        for (LinkedHashMap<String, Object> s : dataPoints) {
+        for (final LinkedHashMap<String, Object> s : dataPoints) {
             try {
                 log.debug("Received a message, yay!\n" + s);
                 esperSink.getEPRuntime().sendEvent(s, subscriberConfig.getEventOutputName());
@@ -68,7 +70,7 @@ class NetezzaSubscriber implements Subscriber
 
     private ImmutableList<LinkedHashMap<String, Object>> getDataPoints()
     {
-        NzDatasource dataSource = new NzDatasource();
+        final NzDatasource dataSource = new NzDatasource();
 
         dataSource.setHost(subscriberConfig.getHost());
         dataSource.setDatabase(subscriberConfig.getDatabase());
@@ -83,7 +85,7 @@ class NetezzaSubscriber implements Subscriber
             statement = connection.createStatement();
 
             resultSet = statement.executeQuery(subscriberConfig.getSqlQuery());
-            ImmutableList.Builder<LinkedHashMap<String, Object>> builder = new ImmutableList.Builder<LinkedHashMap<String, Object>>();
+            final ImmutableList.Builder<LinkedHashMap<String, Object>> builder = new ImmutableList.Builder<LinkedHashMap<String, Object>>();
 
 
             while (resultSet.next()) {

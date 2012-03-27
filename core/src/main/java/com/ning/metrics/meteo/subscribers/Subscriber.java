@@ -16,7 +16,7 @@
 
 package com.ning.metrics.meteo.subscribers;
 
-interface Subscriber
+public interface Subscriber
 {
     public void subscribe();
 

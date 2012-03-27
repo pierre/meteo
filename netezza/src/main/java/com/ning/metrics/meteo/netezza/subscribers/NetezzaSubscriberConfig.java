@@ -14,9 +14,11 @@
  * under the License.
  */
 
-package com.ning.metrics.meteo.subscribers;
+package com.ning.metrics.meteo.netezza.subscribers;
 
-class NetezzaSubscriberConfig extends SubscriberConfig
+import com.ning.metrics.meteo.subscribers.SubscriberConfig;
+
+public class NetezzaSubscriberConfig extends SubscriberConfig
 {
     public String sqlQuery;
     public String host;
@@ -30,7 +32,7 @@ class NetezzaSubscriberConfig extends SubscriberConfig
         return host;
     }
 
-    public void setHost(String host)
+    public void setHost(final String host)
     {
         this.host = host;
     }
@@ -40,7 +42,7 @@ class NetezzaSubscriberConfig extends SubscriberConfig
         return password;
     }
 
-    public void setPassword(String password)
+    public void setPassword(final String password)
     {
         this.password = password;
     }
@@ -50,7 +52,7 @@ class NetezzaSubscriberConfig extends SubscriberConfig
         return port;
     }
 
-    public void setPort(int port)
+    public void setPort(final int port)
     {
         this.port = port;
     }
@@ -60,7 +62,7 @@ class NetezzaSubscriberConfig extends SubscriberConfig
         return sqlQuery;
     }
 
-    public void setSqlQuery(String sqlQuery)
+    public void setSqlQuery(final String sqlQuery)
     {
         this.sqlQuery = sqlQuery;
     }
@@ -70,7 +72,7 @@ class NetezzaSubscriberConfig extends SubscriberConfig
         return database;
     }
 
-    public void setDatabase(String database)
+    public void setDatabase(final String database)
     {
         this.database = database;
     }
@@ -80,7 +82,7 @@ class NetezzaSubscriberConfig extends SubscriberConfig
         return username;
     }
 
-    public void setUsername(String username)
+    public void setUsername(final String username)
     {
         this.username = username;
     }
