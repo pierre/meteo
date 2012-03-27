@@ -3,6 +3,8 @@
 Meteo is a realtime event processing engine. It can get time series data from a variety of sources and leverages Esper to do runtime analysis.
 Meteo can output data to different rendering engines for graphing purposes.
 
+{<img src="https://secure.travis-ci.org/pierre/meteo.png?branch=master" alt="Build Status" />}[http://travis-ci.org/pierre/meteo]
+
 == Listeners
 
 Meteo can currently take data from:
