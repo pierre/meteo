@@ -191,6 +191,33 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>0.7</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <!-- For some reason, useIdeaDefaultExcludes doesn't pick up .idea directory -->
+                                <exclude>.idea/**</exclude>
+                                <exclude>.git/**</exclude>
+                                <exclude>.gitignore</exclude>
+                                <exclude>README.*</exclude>
+                                <exclude>run.sh</exclude>
+                                <exclude>src/site/**</exclude>
+                                <exclude>doc/**</exclude>
+                                <exclude>dev/**</exclude>
+                                <exclude>.travis.yml</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <issueManagement>
