@@ -45,6 +45,23 @@ import com.google.inject.Inject;
 /**
  * A Subscriber which reads 1K of JSON as the event.
  * 
+ * The JSON is converted to an XML DOM Node guessing at the types.
+ * 
+ * To configure this in Esper, using something like this:
+ * &lt;event-type name="UDPEvents"&gt;
+ *   &lt;xml-dom root-element-name="UDPEvents" /&gt;
+ * &lt;/event-type&gt;
+ * 
+ * To configure this in meteo use something like this:
+ * {
+ *   "name": "UDP JSON",
+ *   "type": "com.ning.metrics.meteo.subscribers.UdpJsonSubscriber",
+ *   "@class": "com.ning.metrics.meteo.subscribers.UdpJsonSubscriberConfig",
+ *   "port": 5678,
+ *   "eventOutputName": "UDPEvents",
+ *   "enabled": true
+ * }
+ * 
  * @author William Speirs <bill.speirs@gmail.com>
  */
 class UdpJsonSubscriber implements Subscriber

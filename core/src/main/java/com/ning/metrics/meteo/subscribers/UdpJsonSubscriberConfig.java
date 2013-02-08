@@ -16,6 +16,11 @@
 
 package com.ning.metrics.meteo.subscribers;
 
+/**
+ * Configuration class for UdpJsonSubscriber.
+ * 
+ * @author William Speirs <bill.speirs@gmail.com>
+ */
 class UdpJsonSubscriberConfig extends SubscriberConfig
 {
     private int port;
