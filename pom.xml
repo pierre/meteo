@@ -25,7 +25,7 @@
     <groupId>com.ning</groupId>
     <artifactId>metrics.realtime-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0</version>
+    <version>1.1.1-SNAPSHOT</version>
     <name>parent</name>
     <description>Realtime Analytics</description>
     <url>http://github.com/pierre/meteo</url>
