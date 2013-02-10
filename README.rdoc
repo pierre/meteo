@@ -243,7 +243,7 @@ You can now access the data via the /rest/1.0/{stream_name}/{esper_attribute} en
 
 = License (see LICENSE-2.0.txt file for full license)
 
-Copyright 2010-2011 Ning
+Copyright 2010-2013 Ning
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
