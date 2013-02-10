@@ -62,6 +62,22 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>com.ning.maven.plugins</groupId>
+                <artifactId>maven-duplicate-finder-plugin</artifactId>
+                <version>1.0.3</version>
+                <configuration>
+                    <failBuildInCaseOfConflict>false</failBuildInCaseOfConflict>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
                 <version>0.7</version>
