@@ -44,14 +44,14 @@ import com.google.inject.Inject;
 
 /**
  * A Subscriber which reads 1K of JSON as the event.
- * 
+ *
  * The JSON is converted to an XML DOM Node guessing at the types.
- * 
+ *
  * To configure this in Esper, using something like this:
  * &lt;event-type name="UDPEvents"&gt;
  *   &lt;xml-dom root-element-name="UDPEvents" /&gt;
  * &lt;/event-type&gt;
- * 
+ *
  * To configure this in meteo use something like this:
  * {
  *   "name": "UDP JSON",
@@ -61,7 +61,7 @@ import com.google.inject.Inject;
  *   "eventOutputName": "UDPEvents",
  *   "enabled": true
  * }
- * 
+ *
  * @author William Speirs <bill.speirs@gmail.com>
  */
 class UdpJsonSubscriber implements Subscriber
@@ -70,10 +70,10 @@ class UdpJsonSubscriber implements Subscriber
 
     private final EPServiceProvider esperSink;
     private final UdpJsonSubscriberConfig config;
-    
+
     private final DatagramSocket socket;
     private final DatagramPacket packet;
-    
+
     private Thread acceptThread;
     private ExecutorService handlerPool;
     boolean running = false;
@@ -82,10 +82,10 @@ class UdpJsonSubscriber implements Subscriber
     public UdpJsonSubscriber(UdpJsonSubscriberConfig config, EPServiceProvider esperSink) throws SocketException, UnknownHostException {
         this.config = config;
         this.esperSink = esperSink;
-        
+
         this.socket = new DatagramSocket(config.getPort(), InetAddress.getByName("0.0.0.0"));
         this.packet = new DatagramPacket(new byte[config.getPacketSize()], config.getPacketSize());
-        
+
         log.info("Created UDP socket on port " + config.getPort() + " with packet size " + config.getPacketSize());
     }
 
@@ -93,7 +93,7 @@ class UdpJsonSubscriber implements Subscriber
     public void subscribe() {
         // set our status to running
         running = true;
-        
+
         // create the handler pool
         handlerPool = Executors.newCachedThreadPool();
 
@@ -109,13 +109,13 @@ class UdpJsonSubscriber implements Subscriber
                   } catch (IOException e) {
                       log.error("Error receiving packet: " + e.getMessage());
                   }
-                  
+
                   // create and submit the worker to the thread pool
                   handlerPool.submit(new PacketHandler(packet.getData()));
               }
           }
         };
-        
+
         acceptThread.setDaemon(true);
         acceptThread.start();
     }
@@ -125,22 +125,22 @@ class UdpJsonSubscriber implements Subscriber
         log.info("Unsubscribing...");
         // stop the processing loop
         running = false;
-        
+
         // interrupt the thread if it's waiting
         acceptThread.interrupt();
-        
+
         try {
             acceptThread.join();
         } catch (InterruptedException e) {
         }
-        
+
         // shutdown the handler thread pool
         handlerPool.shutdownNow();
     }
 
     protected class PacketHandler implements Runnable {
         private final byte[] packetData;
-        
+
         public PacketHandler(byte[] packetData) {
             this.packetData = packetData;
         }
@@ -148,9 +148,9 @@ class UdpJsonSubscriber implements Subscriber
         @Override
         public void run() {
             log.debug("Running handler...");
-            final XMLSerializer serializer = new XMLSerializer(); 
+            final XMLSerializer serializer = new XMLSerializer();
             JSONObject json = null;
-            
+
             try {
                 json = (JSONObject)JSONSerializer.toJSON(new String(packetData));
             } catch(ClassCastException e) {
@@ -160,7 +160,7 @@ class UdpJsonSubscriber implements Subscriber
                 log.error("Got exception: " + e.getMessage());
                 return;
             }
-            
+
             // check for a timestamp, and add if not already there
             if(!json.has("timestamp")) {
                 json.put("timestamp", new Date().getTime());
@@ -168,14 +168,14 @@ class UdpJsonSubscriber implements Subscriber
 
             // set the root to the event output name
             serializer.setRootName(config.getEventOutputName());
-            
+
             final String xml = serializer.write(json);
             final DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 
             try {
                 final DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
                 final Document document = dBuilder.parse(new ByteArrayInputStream(xml.getBytes()));
-                
+
                 esperSink.getEPRuntime().sendEvent(document);
                 log.debug("JSON event submitted: " + json);
             } catch (ParserConfigurationException e) {
