@@ -80,7 +80,7 @@ class FileSubscriber implements Subscriber
                     map.put("timestamp", dateTime);
                     for (int j = 1; j < items.length; j++) {
                         double value = Double.valueOf(items[j]);
-                        map.put(subscriberConfig.getAttributes()[j], value);
+                        map.put(subscriberConfig.getAttributes()[j-1], value);
                     }
                     builder.add(new LinkedHashMap(map));
                 }
